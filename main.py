@@ -1,55 +1,33 @@
-import random
-import requests
-from dotenv import load_dotenv
-# Load environment variables from .env file
-load_dotenv()
-import os
-grok_api_key = os.getenv("GROQ_API_KEY")
+from place_recommender.random_city import get_random_cities
 
-def get_random_countries(country_list, n=3):
-    """Select n random countries from the given list."""
-    return random.sample(country_list, n)
+from weather_module.weather import weather
 
-def get_weather_data(country):
-    """Fetch weather data using Grok API for the given country."""
-    api_url = f"https://api.grok.com/weather?location={country}"  # Replace with the actual Grok API URL
-    headers = {
-        'Authorization': 'Bearer grok_api_key'  # Replace with your actual API key
-    }
-    try:
-        response = requests.get(api_url, headers=headers)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        return {"error": str(e)}
 
-def main():
-    countries = ["France", "Japan", "Brazil", "Australia", "Canada", "India", "Italy", "South Korea", "Germany", "Spain"]
-
-    print("Hello! Where would you like to travel? Here are some suggestions:")
-    suggestions = get_random_countries(countries)
-
-    for i, country in enumerate(suggestions, 1):
-        print(f"{i}. {country}")
-
-    while True:
-        try:
-            choice = int(input("Select a country by entering the number (1-3): "))
-            if choice < 1 or choice > 3:
-                raise ValueError("Invalid choice. Please select a number between 1 and 3.")
-            selected_country = suggestions[choice - 1]
-            break
-        except ValueError as e:
-            print(e)
-
-    print(f"You selected: {selected_country}. Let me check the weather for you...")
-
-    weather_data = get_weather_data(selected_country)
-
-    if "error" in weather_data:
-        print(f"Sorry, I couldn't fetch the weather data. Error: {weather_data['error']}")
+def main(count):
+    print("Hello! Where would you like to travel?")
+    cities = get_random_cities(exclude_city)
+    # print(cities)
+    # city = [word.strip().lower() for word in cities.split(",") if word.strip()]
+    city = [country.lower() for country in cities]
+    # print(city)
+    print(f"Here are 3 cities you might like: {cities}")
+    count += 1 
+    user_city = input("Do you like any city from the list, if yes: \nType a city from the list orelse type 'no': ").strip().lower()
+    if user_city in city:
+        print("Okay! Fetching weather information for your selected city...")
+        weather(user_city)
+    elif user_city == "no":
+        if count < 2:
+            print("We'll give you different cities to select. Thankyou for your patience.")
+            main(count)
+            exclude_city.append(cities)
+    elif count < 2:
+            print("We'll give you different cities to select. Thankyou for your patience.")
+            main(count)
     else:
-        print(f"Weather in {selected_country}: {weather_data}")
+        print("Invalid choice. Try again after sometime.")
 
 if __name__ == "__main__":
-    main()
+    count = 0
+    exclude_city = []
+    main(count)

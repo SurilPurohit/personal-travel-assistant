@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime
 
-from weather_summarize import weather_summarize
+from grok_api.weather_summarize import weather_summarize
 
 # API Endpoints
 GEOCODING_API_URL = "https://nominatim.openstreetmap.org/search"

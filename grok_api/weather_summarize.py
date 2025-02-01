@@ -12,7 +12,7 @@ client = Groq(
 def weather_summarize(user_city, start_date, end_date, weather_forecast):
     try:
         prompt = f'''
-            Summarize the following weather forecast for {user_city} from {start_date} to {end_date} from the list of data {weather_forecast}. Highlight key trends, such as temperature ranges, how it feels, precipitation levels, and wind speed. Keep the summary concise, focusing on the overall weather pattern and notable observations.
+            Summarize the following weather forecast for {user_city} from {start_date} to {end_date} from the list of data {weather_forecast}. Highlight key trends, such as temperature ranges, how it feels, precipitation levels, and wind speed. Keep the summary concise, focusing on the overall weather pattern and notable observations. Also, suggest user whether it is optimal time to visit or not.
             Please follow the examples given below
             input - Weather forecast for Paris from 2025-02-02 to 2025-02-05:
                 Date: 2025-02-02
