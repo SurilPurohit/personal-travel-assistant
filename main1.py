@@ -2,6 +2,7 @@ import requests
 import random
 
 from dotenv import load_dotenv
+from weather import weather
 # Load environment variables from .env file
 load_dotenv()
 import os
@@ -54,8 +55,9 @@ def main():
         return
 
     print("Okay! Fetching weather information for your selected city...")
-    weather_info = get_weather(user_city)
-    print(weather_info)
+    # weather_info = 
+    weather(user_city)
+    # print(weather_info)
 
 
 if __name__ == "__main__":
