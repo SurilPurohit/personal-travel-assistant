@@ -6,7 +6,7 @@ from grok_api.weather_summarize import weather_summarize
 # API Endpoints
 GEOCODING_API_URL = "https://nominatim.openstreetmap.org/search"
 WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast"
-MAX_DATE = "2025-02-12"  # Maximum date supported by the Open-Meteo API
+MAX_DATE = "2025-02-20"  # Maximum date supported by the Open-Meteo API
 
 def get_coordinates(user_city):
     """
