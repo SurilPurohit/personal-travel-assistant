@@ -6,7 +6,7 @@ from grok_api.weather_summarize import weather_summarize
 # API Endpoints
 GEOCODING_API_URL = "https://nominatim.openstreetmap.org/search"
 WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast"
-MAX_DATE = "2025-02-20"  # Maximum date supported by the Open-Meteo API
+MAX_DATE = "2025-02-28"  # Maximum date supported by the Open-Meteo API
 
 def get_coordinates(user_city):
     """
@@ -125,8 +125,8 @@ def weather(user_city):
         latitude, longitude = coordinates
         
         # Get start and end dates for the round trip
-        start_date = input("Enter the start date of your trip (YYYY-MM-DD): ")
-        end_date = input("Enter the end date of your trip (YYYY-MM-DD): ")
+        start_date = "2025-02-16" # input("Enter the start date of your trip (YYYY-MM-DD): ")
+        end_date = "2025-02-20" # input("Enter the end date of your trip (YYYY-MM-DD): ")
         
         # Validate date format
         try:
@@ -150,3 +150,6 @@ def weather(user_city):
 
     else:
         print("Unable to fetch weather data. Please check the user_city name.")
+
+
+    return start_date, end_date

@@ -27,7 +27,7 @@ def city_code(city):
         )
 
         summary = response.choices[0].message.content
-        print(response.choices[0].message.content)
+        # print(response.choices[0].message.content)
         return summary
 
     except Exception as e:

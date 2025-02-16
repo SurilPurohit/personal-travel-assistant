@@ -1,3 +1,4 @@
+from grok_api.beautify_flight import beautify_flight
 from grok_api.city_code import city_code
 from serpapi import GoogleSearch
 import pandas as pd
@@ -53,16 +54,28 @@ def process_flight_data(flight_response, i=0):
     return flights_data
 
 
-def flight(city, i=0):
-    departure_airport = 'YYZ' # input('Enter the departure airport IATA code: ')
-    arrival_airport = city_code(city).upper() # 'BOM' # input('Enter the arrival airport IATA code: ')
-    departure_date = '2025-02-10' # input('Enter the departure date in this format YYYY-MM-DD: ')
-    return_date = '2025-02-14' # input('Enter the return date in this format YYYY-MM-DD: ')
-    i = 0
-    search = search_flights(departure_airport, arrival_airport, departure_date, return_date)
+def flight(city, i, start_date, end_date):
+    print(i)
+    try:
+        departure_airport = 'YYZ' # input('Enter the departure airport IATA code: ')
+        arrival_airport = city_code(city).upper() # 'BOM' # input('Enter the arrival airport IATA code: ')
+        departure_date = start_date # '2025-02-10' # input('Enter the departure date in this format YYYY-MM-DD: ')
+        return_date = end_date # '2025-02-14' # input('Enter the return date in this format YYYY-MM-DD: ')
+        i = 0
+        search = search_flights(departure_airport, arrival_airport, departure_date, return_date)
 
-    # Process and display
-    flights_price_df = process_flight_data(search, i)
-    print(flights_price_df)
-    print(search["best_flights"][i]["type"])
-    print(search["best_flights"][i]["price"])
+        # Process and display
+        flights_details = process_flight_data(search, i)
+        # print(flights_details)
+        flight_type = search["best_flights"][i]["type"]
+        price = search["best_flights"][i]["price"]
+
+        # beautifying response with the help of grok API
+        print(beautify_flight(flights_details, flight_type, price))
+
+        return True
+
+    except Exception as e:
+        # Handle other potential errors
+        print(f"No information available, try again after sometime.")
+        return False    
