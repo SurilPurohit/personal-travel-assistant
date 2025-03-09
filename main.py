@@ -30,6 +30,7 @@ def main(count):
                 if next_flight2 == "no":
                     print("No other option available.") 
                 else:
+                    
                     print("Added to calendar")
             else:
                 print("Added to calendar")

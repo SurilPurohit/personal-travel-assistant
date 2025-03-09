@@ -1,0 +1,20 @@
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+SUMMARY:Flight ET 553 from Toronto Pearson International Airport to Bole A
+ ddis Ababa International Airport
+DTSTART:20250310T110500
+DTEND:20250311T072000
+DTSTAMP:20250309T020834Z
+LOCATION:Toronto Pearson International Airport to Bole Addis Ababa Interna
+ tional Airport
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Flight ET 553 from Bole Addis Ababa International Airport to Toron
+ to Pearson International Airport
+DTSTART:20250311T072000
+DTEND:20250310T110500
+DTSTAMP:20250309T020834Z
+LOCATION:Bole Addis Ababa International Airport to Toronto Pearson Interna
+ tional Airport
+END:VEVENT
+END:VCALENDAR
