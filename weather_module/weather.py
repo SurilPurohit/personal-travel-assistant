@@ -111,11 +111,11 @@ def display_weather_forecast(data, user_city, start_date, end_date):
             # print(f"- Max Wind Speed: {wind_speed[i]} km/h\n")
             weather_forecast.append(f"- Max Wind Speed: {wind_speed[i]} km/h\n")
         
-        weather_summarize(user_city, start_date, end_date, weather_forecast)
+        return weather_summarize(user_city, start_date, end_date, weather_forecast)
     else:
         print("No weather forecast data available.")
 
-def weather(user_city):
+def weather(user_city, start_date, end_date):
     """
     Main function to get weather forecast for a specified range of dates.
     """
@@ -125,31 +125,24 @@ def weather(user_city):
         latitude, longitude = coordinates
         
         # Get start and end dates for the round trip
-        start_date = "2025-03-10" # input("Enter the start date of your trip (YYYY-MM-DD): ")
-        end_date = "2025-03-12" # input("Enter the end date of your trip (YYYY-MM-DD): ")
+        # start_date = "2025-03-10" # input("Enter the start date of your trip (YYYY-MM-DD): ")
+        # end_date = "2025-03-12" # input("Enter the end date of your trip (YYYY-MM-DD): ")
         
-        # Validate date format
-        try:
-            start_dt = datetime.strptime(start_date, "%Y-%m-%d")
-            end_dt = datetime.strptime(end_date, "%Y-%m-%d")
-            max_dt = datetime.strptime(MAX_DATE, "%Y-%m-%d")
-        except ValueError:
-            print("Invalid date format. Please enter dates in YYYY-MM-DD format.")
-            return
+        
         
         # Check if end_date exceeds the maximum allowed date
-        if end_dt > max_dt:
-            print(f"Warning: End date exceeds the maximum allowed date ({MAX_DATE}).")
-            end_date = MAX_DATE
-            print(f"Adjusting end date to {end_date}.")
+        # if end_dt > max_dt:
+        #     print(f"Warning: End date exceeds the maximum allowed date ({MAX_DATE}).")
+        #     end_date = MAX_DATE
+        #     print(f"Adjusting end date to {end_date}.")
         
         # Fetch and display the weather forecast
         weather_data = fetch_weather_forecast(latitude, longitude, start_date, end_date)
-        display_weather_forecast(weather_data, user_city, start_date, end_date)
-
+        final_weather_data = display_weather_forecast(weather_data, user_city, start_date, end_date)
+        print(final_weather_data)
 
     else:
         print("Unable to fetch weather data. Please check the user_city name.")
 
 
-    return start_date, end_date
+    return final_weather_data

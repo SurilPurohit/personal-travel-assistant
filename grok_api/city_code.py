@@ -15,6 +15,8 @@ def city_code(city):
             just return the {city}'s correct IATA code. Refer the below example:
             input - Mumbai
             output - BOM
+            input - London
+            output - LHR
         '''
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",

@@ -1,9 +1,13 @@
 
+from calender_api.calender import calender
+from flight_recommendations.flight import flight
 import streamlit as st
 import pandas as pd
 import random
 import re
 from datetime import date, timedelta
+
+from weather_module.weather import weather
 
 # Function to extract city from user input
 def extract_city_from_text(text, cities):
@@ -25,27 +29,27 @@ def extract_city_from_text(text, cities):
     return None
 
 # Generate fake weather data
-def get_weather(city, start_date, end_date):
-    return f"Weather in {city} from {start_date} to {end_date}: ☀ Sunny, 25°C"
+# def get_weather(city, start_date, end_date):
+#     return f"Weather in {city} from {start_date} to {end_date}: ☀ Sunny, 25°C"
 
 # Generate fake flights
-def search_flights(departure_airport, arrival_airport, departure_date, return_date, flight_class):
-    airlines = ["Air Canada", "Delta", "United Airlines", "Emirates", "Qatar Airways"]
+# def search_flights(departure_airport, arrival_airport, departure_date, return_date, flight_class):
+#     airlines = ["Air Canada", "Delta", "United Airlines", "Emirates", "Qatar Airways"]
     
-    return [
-        {
-            "Flight Number": f"AC{random.randint(100,999)}",
-            "Airline": random.choice(airlines),
-            "Class": flight_class,
-            "Price": f"${random.randint(200, 1000)}",
-            "Departure": f"{departure_date} 10:00",
-            "Arrival": f"{departure_date} 12:00",
-            "Return Flight": f"AC{random.randint(100,999)}" if return_date else "N/A",
-            "Return Departure": f"{return_date} 15:00" if return_date else "N/A",
-            "Return Arrival": f"{return_date} 17:00" if return_date else "N/A",
-        }
-        for _ in range(3)  # Generate 3 fake flight options
-    ]
+#     return [
+#         {
+#             "Flight Number": f"AC{random.randint(100,999)}",
+#             "Airline": random.choice(airlines),
+#             "Class": flight_class,
+#             "Price": f"${random.randint(200, 1000)}",
+#             "Departure": f"{departure_date} 10:00",
+#             "Arrival": f"{departure_date} 12:00",
+#             "Return Flight": f"AC{random.randint(100,999)}" if return_date else "N/A",
+#             "Return Departure": f"{return_date} 15:00" if return_date else "N/A",
+#             "Return Arrival": f"{return_date} 17:00" if return_date else "N/A",
+#         }
+#         for _ in range(3)  # Generate 3 fake flight options
+#     ]
 
 # Generate itinerary with city history (static for now)
 def generate_itinerary(flight, city):
@@ -129,12 +133,12 @@ def generate_itinerary(flight, city):
     """
 
 # Function to generate fake calendar invite link
-def generate_calendar_link():
-    return "[📅 Download Calendar Invite](#)"
+# def generate_calendar_link():
+#     return "[📅 Download Calendar Invite](#)"
 
 # Set up Streamlit page
-st.set_page_config(page_title="VacationVoyager", layout="wide")
-st.title("✈ VacationVoyager Dashboard")
+st.set_page_config(page_title="Vacation Voyager", layout="wide")
+st.title("✈ Vacation Voyager Dashboard")
 st.markdown("Plan your perfect trip in just a few clicks! 🚀")
 
 # Define session state
@@ -213,35 +217,35 @@ if st.sidebar.button("🔍 Search Flights"):
         if city not in cities:
             st.sidebar.info(f"Searching for flights to {city}. This destination may have limited information available.")
         
-        st.session_state.flights = search_flights("YYZ", city, start_date, end_date, flight_class)
+        st.session_state.flights = flight("YYZ", city, start_date, end_date, flight_class)
         st.session_state.selected_flight = None  # Reset selection on new search
         st.session_state.disable_selection = False  # Re-enable selection when searching again
 
 # Display Weather
 if st.session_state.flights:
     st.subheader(f"⛅ Weather Forecast for {city}")
-    st.info(get_weather(city, start_date, end_date))
+    st.info(weather(city, start_date, end_date))
 
     # Show Flights
     st.subheader("✈ Available Flights")
-    df_flights = pd.DataFrame(st.session_state.flights)
-    st.dataframe(df_flights)
+    # df_flights = pd.DataFrame(st.session_state.flights)
+    # st.dataframe(df_flights)
 
     # Flight Selection with Persistence
     st.subheader("📌 Select a Flight")
-    flight_options = [f"{flight['Airline']} | {flight['Flight Number']} | {flight['Price']}" for flight in st.session_state.flights]
+    # flight_options = [f"{flight['Airline']} | {flight['Flight Number']} | {flight['Price']}" for flight in st.session_state.flights]
     
-    selected_flight_index = st.radio(
-        "Choose your flight:", 
-        list(range(len(flight_options))), 
-        format_func=lambda x: flight_options[x], 
-        index=None if not st.session_state.selected_flight else flight_options.index(f"{st.session_state.selected_flight['Airline']} | {st.session_state.selected_flight['Flight Number']} | {st.session_state.selected_flight['Price']}"),
-        disabled=st.session_state.disable_selection  # Disable selection after choosing a flight
-    )
+    # selected_flight_index = st.radio(
+    #     "Choose your flight:", 
+    #     list(range(len(flight_options))), 
+    #     format_func=lambda x: flight_options[x], 
+    #     index=None if not st.session_state.selected_flight else flight_options.index(f"{st.session_state.selected_flight['Airline']} | {st.session_state.selected_flight['Flight Number']} | {st.session_state.selected_flight['Price']}"),
+    #     disabled=st.session_state.disable_selection  # Disable selection after choosing a flight
+    # )
 
-    if selected_flight_index is not None and not st.session_state.disable_selection:
-        st.session_state.selected_flight = st.session_state.flights[selected_flight_index]
-        st.session_state.disable_selection = True  # Lock selection after choosing a flight
+    # if selected_flight_index is not None and not st.session_state.disable_selection:
+    #     st.session_state.selected_flight = st.session_state.flights[selected_flight_index]
+    #     st.session_state.disable_selection = True  # Lock selection after choosing a flight
 
 # Show Itinerary & Calendar Download
 if st.session_state.selected_flight:
@@ -260,7 +264,7 @@ if st.session_state.selected_flight:
     
     # Calendar Download Option
     st.subheader("📅 Calendar Invite")
-    st.markdown(generate_calendar_link(), unsafe_allow_html=True)
+    # st.markdown(calender(), unsafe_allow_html=True)
 else:
     if st.session_state.flights:
         st.warning("🔄 Not satisfied? Modify your search and try again!")

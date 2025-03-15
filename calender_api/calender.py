@@ -63,3 +63,5 @@ def calender(flights_details):
     except Exception as e:
         print("Exception: ", e)
 
+    return "Calender invite downloaded successfully."
+

@@ -37,7 +37,7 @@ def beautify_flight(flights_details, flight_type, price):
         )
 
         summary = response.choices[0].message.content
-        # print(summary)
+        print(summary)
         return summary
 
     except Exception as e:

@@ -29,9 +29,9 @@ def search_flights(departure_airport, arrival_airport, departure_date, return_da
     results = search.get_dict()
 
     # Check if response contains expected data
-    if "best_flights" not in results or not results["best_flights"]:
-        print("Warning: No 'best_flights' data found in API response.")
-        return None  # Return None instead of breaking the code
+    # if "best_flights" not in results or not results["best_flights"]:
+    #     print("Warning: No 'best_flights' data found in API response.")
+    #     return None  # Return None instead of breaking the code
 
     return results
 
@@ -68,15 +68,17 @@ def process_flight_data(flight_response, i=0):
         return pd.DataFrame()  # Return empty DataFrame to avoid crashing
 
 
-def flight(city, i, start_date, end_date):
-    print(i)
+def flight(dep_city, city, start_date, end_date, flight_class):
+    # print(i)
     try:
-        departure_airport = 'YYZ'  # input('Enter the departure airport IATA code: ')
+        departure_airport = dep_city  # input('Enter the departure airport IATA code: ')
         arrival_airport = city_code(city).upper()  # 'BOM' # input('Enter the arrival airport IATA code: ')
+        print(arrival_airport)
         departure_date = start_date  # '2025-02-10' # input('Enter the departure date in this format YYYY-MM-DD: ')
         return_date = end_date  # '2025-02-14' # input('Enter the return date in this format YYYY-MM-DD: ')
         i = 0
         search = search_flights(departure_airport, arrival_airport, departure_date, return_date)
+        print(search)
 
         if not search:
             print("No flight data returned from API.")
@@ -105,7 +107,7 @@ def flight(city, i, start_date, end_date):
         # beautifying response with the help of grok API
         # print(beautify_flight(flights_details, flight_type, price))
 
-        return True
+        return str(flights_details)
 
     except Exception as e:
         # Handle other potential errors
