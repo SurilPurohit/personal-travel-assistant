@@ -12,7 +12,8 @@ client = Groq(
 def city_code(city):
     try:
         prompt = f'''
-            just return the {city}'s correct IATA code. Refer the below example:
+            just return the {city}'s IATA code for it's famous airport. 
+            Refer the below example:
             input - Mumbai
             output - BOM
             input - London
