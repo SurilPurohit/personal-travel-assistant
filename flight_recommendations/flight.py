@@ -3,6 +3,7 @@ from grok_api.beautify_flight import beautify_flight
 from grok_api.city_code import city_code
 from serpapi import GoogleSearch
 import pandas as pd
+import time
 # Ensure Pandas shows all columns
 pd.set_option("display.max_columns", None)
 
@@ -13,14 +14,52 @@ load_dotenv()
 import os
 flight_api_key = os.getenv("FLIGHT_API_KEY")
 
+# Mapping dictionary
+travel_class_mapping = {
+    1: "Economy",
+    2: "Premium economy",
+    3: "Business",
+    4: "First"
+}
 
-def search_flights(departure_airport, arrival_airport, departure_date, return_date):
+trip_mapping = {
+    1: "Round trip",
+    2: "One way"
+}
+
+def get_trip_value(trip_type):
+    for key, value in trip_mapping.items():
+        if value.lower() == trip_type.lower():
+            return key
+    return None  # Return None if trip_type is not found
+
+def get_class_value(travel_class):
+    for key, value in travel_class_mapping.items():
+        if value.lower() == travel_class.lower():
+            return key
+    return None  # Return None if class_name is not found
+
+def search_flights_with_retry(*args, max_retries=2):
+    for attempt in range(max_retries):
+        results = search_flights(*args)
+        if results and "best_flights" in results and results["best_flights"]:
+            return results
+        print(f"Retrying API call... ({attempt+1}/{max_retries})")
+        time.sleep(2)  # Wait before retrying
+    print("Max retries reached. No best_flights data found.")
+    return None
+
+
+def search_flights(departure_airport, arrival_airport, departure_date, return_date, passengers, trip_type, flight_class):
     params = {
         "engine": "google_flights",
         "departure_id": departure_airport,
         "arrival_id": arrival_airport,
         "outbound_date": departure_date,
         "return_date": return_date,
+        "adults": passengers,
+        "type": get_trip_value(trip_type),
+        "travel_class": get_class_value(flight_class),
         "currency": "CAD",
         "hl": "en",
         "api_key": flight_api_key
@@ -37,7 +76,7 @@ def search_flights(departure_airport, arrival_airport, departure_date, return_da
 
 
 def process_flight_data(flight_response, i=0):
-    if not flight_response or "best_flights" not in flight_response:
+    if not flight_response: #or "best_flights" not in flight_response:
         print("Error: No valid flight data to process.")
         return pd.DataFrame()  # Return empty DataFrame instead of raising an error
 
@@ -68,7 +107,7 @@ def process_flight_data(flight_response, i=0):
         return pd.DataFrame()  # Return empty DataFrame to avoid crashing
 
 
-def flight(dep_city, city, start_date, end_date, flight_class):
+def flight(dep_city, city, start_date, end_date, passengers, trip_type, flight_class):
     # print(i)
     try:
         departure_airport = dep_city  # input('Enter the departure airport IATA code: ')
@@ -77,7 +116,8 @@ def flight(dep_city, city, start_date, end_date, flight_class):
         departure_date = start_date  # '2025-02-10' # input('Enter the departure date in this format YYYY-MM-DD: ')
         return_date = end_date  # '2025-02-14' # input('Enter the return date in this format YYYY-MM-DD: ')
         i = 0
-        search = search_flights(departure_airport, arrival_airport, departure_date, return_date)
+        
+        search = search_flights(departure_airport, arrival_airport, departure_date, return_date, passengers, trip_type, flight_class)
         print(search)
 
         if not search:
@@ -88,6 +128,14 @@ def flight(dep_city, city, start_date, end_date, flight_class):
         flights_details = process_flight_data(search, i)
 
         if flights_details.empty:
+            search = search_flights_with_retry(departure_airport, arrival_airport, departure_date, return_date, passengers, trip_type, flight_class)
+            if not search:
+                print("No flight data returned from API.")
+                return False  # Exit early if no flights found
+
+            # Process and display
+            flights_details = process_flight_data(search, i)
+            
             print("No valid flights found, skipping calendar entry.")
             return False  # Skip further processing
 

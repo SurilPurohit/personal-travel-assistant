@@ -28,29 +28,6 @@ def extract_city_from_text(text, cities):
     
     return None
 
-# Generate fake weather data
-# def get_weather(city, start_date, end_date):
-#     return f"Weather in {city} from {start_date} to {end_date}: ☀ Sunny, 25°C"
-
-# Generate fake flights
-# def search_flights(departure_airport, arrival_airport, departure_date, return_date, flight_class):
-#     airlines = ["Air Canada", "Delta", "United Airlines", "Emirates", "Qatar Airways"]
-    
-#     return [
-#         {
-#             "Flight Number": f"AC{random.randint(100,999)}",
-#             "Airline": random.choice(airlines),
-#             "Class": flight_class,
-#             "Price": f"${random.randint(200, 1000)}",
-#             "Departure": f"{departure_date} 10:00",
-#             "Arrival": f"{departure_date} 12:00",
-#             "Return Flight": f"AC{random.randint(100,999)}" if return_date else "N/A",
-#             "Return Departure": f"{return_date} 15:00" if return_date else "N/A",
-#             "Return Arrival": f"{return_date} 17:00" if return_date else "N/A",
-#         }
-#         for _ in range(3)  # Generate 3 fake flight options
-#     ]
-
 # Generate itinerary with city history (static for now)
 def generate_itinerary(flight, city):
     city_history = {
@@ -193,16 +170,16 @@ st.session_state.destination_city = city
 
 passengers = st.sidebar.slider("Number of Passengers", 1, 10, 1)
 
-trip_type = st.sidebar.radio("Trip Type", ["Single Trip", "Round Trip"])
+trip_type = st.sidebar.radio("Trip Type", ["One way", "Round Trip"])
 
 flight_class = st.sidebar.radio("Flight Class", ["Economy", "Premium Economy", "Business", "First Class"])
 
 start_date = st.sidebar.date_input("Departure Date", date.today())
 min_end_date = start_date + timedelta(days=1)
-end_date = st.sidebar.date_input("Return Date", min_end_date, min_value=min_end_date, disabled=(trip_type == "Single Trip"))
+end_date = st.sidebar.date_input("Return Date", min_end_date, min_value=min_end_date, disabled=(trip_type == "One way"))
 
-if trip_type == "Single Trip":
-    end_date = None  # Disable return date for Single Trip
+if trip_type == "One way":
+    end_date = None  # Disable return date for One way
 
 # Search Flights Button
 if st.sidebar.button("🔍 Search Flights"):
@@ -217,7 +194,7 @@ if st.sidebar.button("🔍 Search Flights"):
         if city not in cities:
             st.sidebar.info(f"Searching for flights to {city}. This destination may have limited information available.")
         
-        st.session_state.flights = flight("YYZ", city, start_date, end_date, flight_class)
+        st.session_state.flights = flight("YYZ", city, start_date, end_date, passengers, trip_type, flight_class)
         st.session_state.selected_flight = None  # Reset selection on new search
         st.session_state.disable_selection = False  # Re-enable selection when searching again
 
@@ -232,7 +209,7 @@ if st.session_state.flights:
     # st.dataframe(df_flights)
 
     # Flight Selection with Persistence
-    st.subheader("📌 Select a Flight")
+    # st.subheader("📌 Select a Flight")
     # flight_options = [f"{flight['Airline']} | {flight['Flight Number']} | {flight['Price']}" for flight in st.session_state.flights]
     
     # selected_flight_index = st.radio(
@@ -244,8 +221,8 @@ if st.session_state.flights:
     # )
 
     # if selected_flight_index is not None and not st.session_state.disable_selection:
-    #     st.session_state.selected_flight = st.session_state.flights[selected_flight_index]
-    #     st.session_state.disable_selection = True  # Lock selection after choosing a flight
+    # st.session_state.selected_flight = st.session_state.flights[selected_flight_index]
+    # st.session_state.disable_selection = True  # Lock selection after choosing a flight
 
 # Show Itinerary & Calendar Download
 if st.session_state.selected_flight:
