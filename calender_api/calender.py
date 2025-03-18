@@ -4,10 +4,6 @@ import pandas as pd
 def calender(flights_details):
     
     try:
-        # Ensure flights_details is converted to a dictionary
-        # if hasattr(flights_details, "to_dict"):  # Check if it's a Pandas Series
-        #     flights_details = flights_details.to_dict()
-        
         # Ensure all datetime fields are formatted correctly
         def format_datetime(dt):
             if isinstance(dt, pd.Timestamp):  # If it's a Pandas Timestamp
@@ -37,15 +33,15 @@ def calender(flights_details):
 
         print("calender")
 
-        
+        text = ""
         response = requests.post(url, json=payload)
 
         if response.status_code == 200:
             data = response.json()
             # print(data)
             download_url = "https://calendar-ics-api.azurewebsites.net" + data["download_url"]
-            print(f"Download the ICS file from: {download_url}")
-
+            text = f"Download the ICS file from: {download_url}"
+            print(text)
             # Step 2: Download the ICS file
             ics_response = requests.get(download_url)
             if ics_response.status_code == 200:
@@ -63,5 +59,5 @@ def calender(flights_details):
     except Exception as e:
         print("Exception: ", e)
 
-    return "Calender invite downloaded successfully."
+    return text
 

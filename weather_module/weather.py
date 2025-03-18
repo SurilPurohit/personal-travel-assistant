@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from grok_api.weather_summarize import weather_summarize
 
@@ -13,7 +13,7 @@ def get_coordinates(user_city):
     Fetch latitude and longitude for a given user_city using Nominatim API.
     
     Parameters:
-    - user_city (str): The name of the city or user_city (e.g., "Patiala").
+    - user_city (str): The name of the city or user_city (e.g., "Mumbai").
     
     Returns:
     - tuple: Latitude and longitude as floats, or None if not found.
@@ -85,7 +85,7 @@ def display_weather_forecast(data, user_city, start_date, end_date):
 
     if data and "daily" in data:
         # print(f"\nWeather forecast for {user_city} from {start_date} to {end_date}:\n")
-        weather_forecast.append(f"Weather forecast for {user_city} from {start_date} to {end_date}:")
+        weather_forecast.append(f"Weather forecast for {user_city} around {start_date}:")
         daily = data["daily"]
         dates = daily["time"]
         temps_max = daily["temperature_2m_max"]
@@ -111,7 +111,7 @@ def display_weather_forecast(data, user_city, start_date, end_date):
             # print(f"- Max Wind Speed: {wind_speed[i]} km/h\n")
             weather_forecast.append(f"- Max Wind Speed: {wind_speed[i]} km/h\n")
         
-        return weather_summarize(user_city, start_date, end_date, weather_forecast)
+        return weather_summarize(user_city, start_date, weather_forecast)
     else:
         print("No weather forecast data available.")
 
@@ -128,6 +128,8 @@ def weather(user_city, start_date, end_date):
         # start_date = "2025-03-10" # input("Enter the start date of your trip (YYYY-MM-DD): ")
         # end_date = "2025-03-12" # input("Enter the end date of your trip (YYYY-MM-DD): ")
         
+        if not end_date:
+            end_date = start_date + timedelta(days=1)
         
         
         # Check if end_date exceeds the maximum allowed date

@@ -42,7 +42,7 @@ def get_class_value(travel_class):
 def search_flights_with_retry(*args, max_retries=2):
     for attempt in range(max_retries):
         results = search_flights(*args)
-        if results and "best_flights" in results and results["best_flights"]:
+        if results and "best_flights" in results and results["best_flights"] and results["other_flights"]:
             return results
         print(f"Retrying API call... ({attempt+1}/{max_retries})")
         time.sleep(2)  # Wait before retrying
@@ -60,7 +60,7 @@ def search_flights(departure_airport, arrival_airport, departure_date, return_da
         "adults": passengers,
         "type": get_trip_value(trip_type),
         "travel_class": get_class_value(flight_class),
-        "currency": "CAD",
+        "currency": "USD",
         "hl": "en",
         "api_key": flight_api_key
     }
@@ -75,32 +75,61 @@ def search_flights(departure_airport, arrival_airport, departure_date, return_da
     return results
 
 
-def process_flight_data(flight_response, i=0):
+def process_flight_data(flight_response):
     if not flight_response: #or "best_flights" not in flight_response:
         print("Error: No valid flight data to process.")
         return pd.DataFrame()  # Return empty DataFrame instead of raising an error
 
     try:
-        flights_data = pd.DataFrame([
-            {
-                "Flight Number": flight["flight_number"],
-                "Airline": flight["airline"],
-                "Departure Airport": flight["departure_airport"]["name"],
-                "Departure Time": flight["departure_airport"]["time"],
-                "Arrival Airport": flight["arrival_airport"]["name"],
-                "Arrival Time": flight["arrival_airport"]["time"],
-                "Duration (min)": flight["duration"],
-                "Airplane": flight.get("airplane", "N/A"),
-                "Travel Class": flight["travel_class"],
-                "Legroom": flight["legroom"],
-                "Extensions": ", ".join(flight["extensions"]),
-                "Often Delayed": flight.get("often_delayed_by_over_30_min", False),
-                "Overnight Flight": flight.get("overnight", False)
-            }
-            for flight in flight_response['best_flights'][i]["flights"]
-        ])
+        direct_flights = []
+        # Check if 'best_flights' exists in the response
+        if 'best_flights' in flight_response:
+            for flight_set in flight_response['best_flights'][:3]:
+                # Ensure 'flights' is a key in the current flight_set
+                if 'flights' in flight_set:
+                    for flight in flight_set['flights']:
+                        # Check if there are no layovers, meaning it's a direct flight
+                        # if not flight.get("layovers"):  # Empty layovers array means direct flight
+                        details = {
+                            "Flight Number": flight.get("flight_number", "N/A"),
+                            "Airline": flight.get("airline", "N/A"),
+                            "Departure Airport": flight.get("departure_airport", {}).get("name", "N/A"),
+                            "Departure Time": flight.get("departure_airport", {}).get("time", "N/A"),
+                            "Arrival Airport": flight.get("arrival_airport", {}).get("name", "N/A"),
+                            "Arrival Time": flight.get("arrival_airport", {}).get("time", "N/A"),
+                            "Duration (min)": flight_set.get("total_duration", "N/A"),
+                            "Price": flight_set.get("price", "N/A"),
+                            "Flight Type": flight_set.get("type", "N/A")
+                        }
+                        direct_flights.append(details)
 
-        return flights_data
+        # Check if 'other_flights' exists in the response
+        if 'other_flights' in flight_response:
+            for flight_set in flight_response['other_flights'][:3]:
+                # Ensure 'flights' is a key in the current flight_set
+                if 'flights' in flight_set:
+                    for flight in flight_set['flights']:
+                        # Check if there are no layovers, meaning it's a direct flight
+                        # if not flight.get("layovers") and not flight.get("layovers"):  # Empty layovers array means direct flight
+                        details = {
+                            "Flight Number": flight.get("flight_number", "N/A"),
+                            "Airline": flight.get("airline", "N/A"),
+                            "Departure Airport": flight.get("departure_airport", {}).get("name", "N/A"),
+                            "Departure Time": flight.get("departure_airport", {}).get("time", "N/A"),
+                            "Arrival Airport": flight.get("arrival_airport", {}).get("name", "N/A"),
+                            "Arrival Time": flight.get("arrival_airport", {}).get("time", "N/A"),
+                            "Duration (min)": flight_set.get("total_duration", "N/A"),
+                            "Price": flight_set.get("price", "N/A"),
+                            "Flight Type": flight_set.get("type", "N/A")
+                        }
+                        direct_flights.append(details)
+
+        # Convert to DataFrame for easier viewing
+        flights_df = pd.DataFrame(direct_flights)
+
+        # Remove rows where two corresponding rows have the same price
+        # df = flights_df[flights_df.duplicated(subset=['Price'], keep=False) == False]
+        return flights_df[:3]
 
     except KeyError as e:
         print(f"Error: Missing expected key {e} in flight data.")
@@ -111,21 +140,21 @@ def flight(dep_city, city, start_date, end_date, passengers, trip_type, flight_c
     # print(i)
     try:
         departure_airport = dep_city  # input('Enter the departure airport IATA code: ')
-        arrival_airport = city_code(city).upper()  # 'BOM' # input('Enter the arrival airport IATA code: ')
+        arrival_airport = "LHR"#city_code(city).upper()  # 'BOM' # input('Enter the arrival airport IATA code: ')
         print(arrival_airport)
         departure_date = start_date  # '2025-02-10' # input('Enter the departure date in this format YYYY-MM-DD: ')
         return_date = end_date  # '2025-02-14' # input('Enter the return date in this format YYYY-MM-DD: ')
         i = 0
         
         search = search_flights(departure_airport, arrival_airport, departure_date, return_date, passengers, trip_type, flight_class)
-        print(search)
+        # print(search)
 
         if not search:
             print("No flight data returned from API.")
             return False  # Exit early if no flights found
 
         # Process and display
-        flights_details = process_flight_data(search, i)
+        flights_details = process_flight_data(search)
 
         if flights_details.empty:
             search = search_flights_with_retry(departure_airport, arrival_airport, departure_date, return_date, passengers, trip_type, flight_class)
@@ -134,28 +163,20 @@ def flight(dep_city, city, start_date, end_date, passengers, trip_type, flight_c
                 return False  # Exit early if no flights found
 
             # Process and display
-            flights_details = process_flight_data(search, i)
+            flights_details = process_flight_data(search)
             
             print("No valid flights found, skipping calendar entry.")
             return False  # Skip further processing
 
         print(flights_details)
 
-        # Check if "best_flights" key exists before accessing
-        if "best_flights" in search:
-            flight_type = search["best_flights"][i].get("type", "Unknown")
-            price = search["best_flights"][i].get("price", "N/A")
-        else:
-            print("Warning: 'best_flights' data missing, skipping price details.")
-            flight_type, price = "Unknown", "N/A"
-
         # Adding flight details to calendar
-        calender(flights_details.iloc[0])
+        # calender(flights_details.iloc[0])
 
         # beautifying response with the help of grok API
         # print(beautify_flight(flights_details, flight_type, price))
 
-        return str(flights_details)
+        return flights_details
 
     except Exception as e:
         # Handle other potential errors
