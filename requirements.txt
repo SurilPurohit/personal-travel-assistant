@@ -1,0 +1,5 @@
+streamlit==1.10.0
+pandas==1.4.2
+grok==1.0.0
+python-dotenv==0.19.2
+requests==2.28.1
