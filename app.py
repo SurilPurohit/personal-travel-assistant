@@ -29,7 +29,7 @@ if "destination_city" not in st.session_state:
 # Sidebar for user input
 st.sidebar.header("🌍 Trip Details")
 
-cities = ["New York", "Los Angeles", "London", "Paris", "Tokyo", "Dubai", "Sydney", "Rome", "Bangkok"]
+cities = ["New York", "Los Angeles", "Toronto", "London", "Paris", "Tokyo", "Dubai", "Sydney", "Rome", "Bangkok"]
 
 # Ask user how they want to input their destination
 destination_input_method = st.sidebar.radio("How would you like to select your destination?", ["Enter text", "Use dropdown"])
@@ -199,7 +199,6 @@ try:
             """.format(destination=destination, calender_link=calender(st.session_state.selected_flight)),
             height=300
         )
-
 
 except AttributeError as e:
     st.session_state.flights = []
