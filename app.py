@@ -1,6 +1,7 @@
 from calender_api.calender import calender
 from flight_recommendations.flight import flight
 from grok_api.extract_city import extract_city_from_text
+from grok_api.itinerary_generation import generate_itinerary
 import streamlit as st
 import pandas as pd
 import random
@@ -8,81 +9,6 @@ import re
 from datetime import date, timedelta
 from weather_module.weather import weather
 import streamlit.components.v1 as components
-
-# Generate itinerary with city history (static for now)
-def generate_itinerary(flight, city):
-    city_history = {
-        "New York": [
-            "Founded in 1624 by Dutch settlers.",
-            "Home to the Statue of Liberty, Times Square, and Wall Street.",
-            "One of the most culturally diverse cities in the world.",
-        ],
-        "Paris": [
-            "Known as the 'City of Light'.",
-            "Home to the Eiffel Tower and Louvre Museum.",
-            "A global hub for fashion, gastronomy, and art.",
-        ],
-        "Tokyo": [
-            "Capital of Japan since 1868.",
-            "Blend of traditional temples and cutting-edge technology.",
-            "Famous for its cherry blossoms and bustling Shibuya Crossing.",
-        ],
-        "Los Angeles": [
-            "Entertainment capital of the world.",
-            "Home to Hollywood and the Walk of Fame.",
-            "Known for its year-round warm weather and beaches.",
-        ],
-        "London": [
-            "Capital of England and the United Kingdom.",
-            "Home to Buckingham Palace and the Tower of London.",
-            "Known for its rich history and diverse culture.",
-        ],
-        "Dubai": [
-            "City of superlatives with the world's tallest building, Burj Khalifa.",
-            "Transformed from a fishing village to a global city in just decades.",
-            "Known for luxury shopping, ultramodern architecture, and lively nightlife.",
-        ],
-        "Sydney": [
-            "Australia's oldest and largest city.",
-            "Famous for its Opera House and Harbour Bridge.",
-            "Known for its beautiful beaches and outdoor lifestyle.",
-        ],
-        "Rome": [
-            "Italy's capital with a history spanning 28 centuries.",
-            "Home to the Colosseum, the Pantheon, and Vatican City.",
-            "Known as the 'Eternal City' and birthplace of Western civilization.",
-        ],
-        "Bangkok": [
-            "Capital and most populous city of Thailand.",
-            "Known for ornate shrines, vibrant street life, and floating markets.",
-            "A major center for shopping and dining in Southeast Asia.",
-        ],
-        "Toronto": [
-            "Canada's largest city and a global center for business and culture.",
-            "Home to the iconic CN Tower and diverse neighborhoods.",
-            "Known for its multiculturalism with over 200 ethnic groups.",
-        ]
-    }
-
-    # Get history points for the selected city, or provide a generic message if city not found
-    history_points = city_history.get(city, [
-        f"Discover the unique history of {city}.",
-        f"Explore the local culture and attractions in {city}.",
-        f"Experience the authentic cuisine and hospitality of {city}."
-    ])
-
-    return f"""
-    ## 📝 Your Itinerary  
-    - **Airline:** {flight['Airline']}  
-    - **Flight Number:** {flight['Flight Number']}  
-    - **Total Price:** {flight['Price']}
-    ---  
-    ## 🏙 About {city}  
-    - {history_points[0]}  
-    - {history_points[1]}  
-    - {history_points[2]}  
-    🎉 Enjoy your trip!
-    """
 
 # Set up Streamlit page
 st.set_page_config(page_title="Vacation Voyager", layout="wide")
@@ -157,116 +83,122 @@ if st.sidebar.button("🔍 Search Flights"):
         #     st.sidebar.info(f"Searching for flights to {city}. This destination may have limited information available.")
         
         st.session_state.flights = flight("YYZ", city, start_date, end_date, passengers, trip_type, flight_class)
-        st.session_state.selected_flight = None  # Reset selection on new search
-        st.session_state.disable_selection = False  # Re-enable selection when searching again
+        if isinstance(st.session_state.flights, pd.DataFrame) and not st.session_state.flights.empty:
+            st.session_state.selected_flight = None  # Reset selection on new search
+            st.session_state.disable_selection = False  # Re-enable selection when searching again
+        else:
+            st.subheader("⚠️ We dont have flights available for your search. Try searching again!")
 
-# Show Available Flights After Search
-if not st.session_state.flights.empty:
-    st.subheader(f"⛅ Weather Forecast for {city}")
-    weather_text = weather(city, start_date, end_date)
-    weather_conditions = re.search(r"(sunny|cloudy|rainy|chilly)", weather_text.lower())
-    if weather_conditions:
-        condition = weather_conditions.group(0)
-        icons = {"sunny": "☀️", "cloudy": "☁️", "rainy": "🌧️", "chilly": "❄️"}
-        icon = icons.get(condition, "🌡️")
+try:
+    # Show Available Flights After Search
+    if not st.session_state.flights.empty:
+        st.subheader(f"⛅ Weather Forecast for {city}")
+        weather_text = weather(city, start_date, end_date)
+        weather_conditions = re.search(r"(sunny|cloudy|rainy|chilly)", weather_text.lower())
+        if weather_conditions:
+            condition = weather_conditions.group(0)
+            icons = {"sunny": "☀️", "cloudy": "☁️", "rainy": "🌧️", "chilly": "❄️"}
+            icon = icons.get(condition, "🌡️")
+        else:
+            icon = "🌡️"
+        st.info(f"{weather_text} {icon}")
+
+        # Travel tips based on city
+        travel_tips = {
+            "London": "Pack a light jacket for chilly mornings in March! Visit Buckingham Palace or a classic pub.",
+            "Paris": "Bring comfortable shoes for exploring the Eiffel Tower and Louvre. Try a croissant at a local café!",
+            "Tokyo": "Experience cherry blossoms if visiting in spring. Try sushi at a local spot in Shibuya.",
+        }
+        tip = travel_tips.get(city, f"Explore the local culture and attractions in {city}!")
+        st.markdown(f"🌟 **Travel Tip:** {tip}")
+
+        st.subheader("✈ Available Flights")
+        df_flights = pd.DataFrame(st.session_state.flights)
+        
+        # Custom CSS for zebra striping and hover effects
+        st.markdown(
+            """
+            <style>
+            .stDataFrame {
+                background-color: white;
+            }
+            .stDataFrame tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+            .stDataFrame tr:hover {
+                background-color: #ddd;
+                cursor: pointer;
+            }
+            .stDataFrame th {
+                background-color: #4CAF50;
+                color: white;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        # Display the dataframe
+        st.dataframe(df_flights.style.set_properties(**{'text-align': 'center'}))
+
+        # Flight Selection with Persistence
+        st.subheader("📌 Select a Flight")
+        flight_options = [
+            f"{row['Airline']} | {row['Flight Number']} | {row['Price']}" for index, row in df_flights.iterrows()
+        ]
+
+        selected_flight_index = st.radio(
+            "Choose your flight:", 
+            list(range(len(flight_options))), 
+            format_func=lambda x: flight_options[x], 
+            index=None if st.session_state.selected_flight is None else flight_options.index(f"{st.session_state.selected_flight['Airline']} | {st.session_state.selected_flight['Flight Number']} | {st.session_state.selected_flight['Price']}"),
+            disabled=st.session_state.disable_selection
+        )
+
+        if selected_flight_index is not None and not st.session_state.disable_selection:
+            st.session_state.selected_flight = st.session_state.flights.iloc[selected_flight_index]
+            st.session_state.disable_selection = True  # Lock selection after choosing a flight
+
     else:
-        icon = "🌡️"
-    st.info(f"{weather_text} {icon}")
+        print("yes")
+        st.subheader("We dont have flights available for your search. Try searching again!")
 
-    # Travel tips based on city
-    travel_tips = {
-        "London": "Pack a light jacket for chilly mornings in March! Visit Buckingham Palace or a classic pub.",
-        "Paris": "Bring comfortable shoes for exploring the Eiffel Tower and Louvre. Try a croissant at a local café!",
-        "Tokyo": "Experience cherry blossoms if visiting in spring. Try sushi at a local spot in Shibuya.",
-    }
-    tip = travel_tips.get(city, f"Explore the local culture and attractions in {city}!")
-    st.markdown(f"🌟 **Travel Tip:** {tip}")
 
-    st.subheader("✈ Available Flights")
-    df_flights = pd.DataFrame(st.session_state.flights)
-    
-    # Custom CSS for zebra striping and hover effects
-    st.markdown(
-        """
-        <style>
-        .stDataFrame {
-            background-color: white;
-        }
-        .stDataFrame tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        .stDataFrame tr:hover {
-            background-color: #ddd;
-            cursor: pointer;
-        }
-        .stDataFrame th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-    
-    # Display the dataframe
-    st.dataframe(df_flights.style.set_properties(**{'text-align': 'center'}))
-
-    # Flight Selection with Persistence
-    st.subheader("📌 Select a Flight")
-    flight_options = [
-        f"{row['Airline']} | {row['Flight Number']} | {row['Price']}" for index, row in df_flights.iterrows()
-    ]
-
-    selected_flight_index = st.radio(
-        "Choose your flight:", 
-        list(range(len(flight_options))), 
-        format_func=lambda x: flight_options[x], 
-        index=None if st.session_state.selected_flight is None else flight_options.index(f"{st.session_state.selected_flight['Airline']} | {st.session_state.selected_flight['Flight Number']} | {st.session_state.selected_flight['Price']}"),
-        disabled=st.session_state.disable_selection
-    )
-
-    if selected_flight_index is not None and not st.session_state.disable_selection:
-        st.session_state.selected_flight = st.session_state.flights.iloc[selected_flight_index]
-        st.session_state.disable_selection = True  # Lock selection after choosing a flight
-
-else:
-    print()
-
-# Show Itinerary After Flight Selection
-if st.session_state.selected_flight is not None:
-    st.subheader("📝 Your Itinerary")
-    st.success("Flight Selected! Generating Itinerary...")
-    
-    destination = st.session_state.destination_city
-    st.info(f"Showing information for {destination}")
-    
-    with st.expander("View Itinerary Details"):
-        st.markdown(generate_itinerary(st.session_state.selected_flight, destination), unsafe_allow_html=True)
-    
-    st.subheader("📅 Calendar Invite")
-    # Custom button with confirmation modal
-    components.html(
-        """
-        <div>
-            <button id="downloadBtn" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-                📥 Download ICS
-            </button>
-            <div id="confirmModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
-                <h3>Confirm Download</h3>
-                <p>Are you sure you want to download the calendar invite for your trip to {destination}?</p>
-                <button onclick="document.getElementById('confirmModal').style.display='none'; document.getElementById('downloadLink').click();" style="background-color: #4CAF50; color: white; padding: 5px 10px; border: none; border-radius: 5px;">Yes</button>
-                <button onclick="document.getElementById('confirmModal').style.display='none';" style="background-color: #f44336; color: white; padding: 5px 10px; margin-left: 10px; border: none; border-radius: 5px;">No</button>
+    # Show Itinerary After Flight Selection
+    if st.session_state.selected_flight is not None:
+        st.subheader("📝 Your Itinerary")
+        st.success("Flight Selected! Generating Itinerary...")
+        
+        destination = st.session_state.destination_city
+        st.info(f"Showing information for {destination}")
+        
+        with st.expander("View Itinerary Details"):
+            st.markdown(generate_itinerary(st.session_state.selected_flight, destination, weather_conditions), unsafe_allow_html=True)
+        
+        st.subheader("📅 Calendar Invite")
+        # Custom button with confirmation modal
+        components.html(
+            """
+            <div>
+                <button id="downloadBtn" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                    📥 Download ICS
+                </button>
+                <div id="confirmModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                    <h3>Confirm Download</h3>
+                    <p>Are you sure you want to download the calendar invite for your trip to {destination}?</p>
+                    <button onclick="document.getElementById('confirmModal').style.display='none'; document.getElementById('downloadLink').click();" style="background-color: #4CAF50; color: white; padding: 5px 10px; border: none; border-radius: 5px;">Yes</button>
+                    <button onclick="document.getElementById('confirmModal').style.display='none';" style="background-color: #f44336; color: white; padding: 5px 10px; margin-left: 10px; border: none; border-radius: 5px;">No</button>
+                </div>
+                <a id="downloadLink" href="{calender_link}" download="trip_to_{destination}.ics" style="display: none;">Download</a>
+                <script>
+                    document.getElementById('downloadBtn').addEventListener('click', function() {{
+                        document.getElementById('confirmModal').style.display = 'block';
+                    }});
+                </script>
             </div>
-            <a id="downloadLink" href="{calender_link}" download="trip_to_{destination}.ics" style="display: none;">Download</a>
-            <script>
-                document.getElementById('downloadBtn').addEventListener('click', function() {{
-                    document.getElementById('confirmModal').style.display = 'block';
-                }});
-            </script>
-        </div>
-        """.format(destination=destination, calender_link=calender(st.session_state.selected_flight)),
-        height=100
-    )
-else:
-    if st.session_state.selected_flight is None:
-        st.warning("🔄 Not satisfied? Modify your search and try again!")
+            """.format(destination=destination, calender_link=calender(st.session_state.selected_flight)),
+            height=100
+        )
+
+except AttributeError as e:
+    st.session_state.flights = []

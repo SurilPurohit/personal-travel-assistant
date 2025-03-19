@@ -12,12 +12,13 @@ client = Groq(
 def city_code(city):
     try:
         prompt = f'''
-            just return the {city}'s IATA code for it's famous airport. 
-            Refer the below example:
-            input - Mumbai
-            output - BOM
-            input - London
-            output - LHR
+            Just return the IATA code for the most famous airport in {city}. No extra text.
+            For example:
+            Input: Mumbai
+            Output: BOM
+            Input: London
+            Output: LHR
+
         '''
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",

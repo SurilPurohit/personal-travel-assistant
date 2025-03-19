@@ -119,6 +119,7 @@ def weather(user_city, start_date, end_date):
     """
     Main function to get weather forecast for a specified range of dates.
     """
+    final_weather_data = ""
     # user_city = input("Enter the user_city name: ")
     coordinates = get_coordinates(user_city)
     if coordinates:

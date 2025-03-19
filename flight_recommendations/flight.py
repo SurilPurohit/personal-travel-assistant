@@ -42,11 +42,11 @@ def get_class_value(travel_class):
 def search_flights_with_retry(*args, max_retries=2):
     for attempt in range(max_retries):
         results = search_flights(*args)
-        if results and "best_flights" in results and results["best_flights"] and results["other_flights"]:
+        if results and "best_flights" in results and results["best_flights"] and results["other_flights"] and "other_flights" in results:
             return results
         print(f"Retrying API call... ({attempt+1}/{max_retries})")
         time.sleep(2)  # Wait before retrying
-    print("Max retries reached. No best_flights data found.")
+    print("Max retries reached. No flights data found.")
     return None
 
 
@@ -60,7 +60,8 @@ def search_flights(departure_airport, arrival_airport, departure_date, return_da
         "adults": passengers,
         "type": get_trip_value(trip_type),
         "travel_class": get_class_value(flight_class),
-        "currency": "USD",
+        "stops": 1,
+        "currency": "CAD",
         "hl": "en",
         "api_key": flight_api_key
     }
@@ -140,7 +141,7 @@ def flight(dep_city, city, start_date, end_date, passengers, trip_type, flight_c
     # print(i)
     try:
         departure_airport = dep_city  # input('Enter the departure airport IATA code: ')
-        arrival_airport = "LHR"#city_code(city).upper()  # 'BOM' # input('Enter the arrival airport IATA code: ')
+        arrival_airport = city_code(city).upper()  # 'BOM' # input('Enter the arrival airport IATA code: ')
         print(arrival_airport)
         departure_date = start_date  # '2025-02-10' # input('Enter the departure date in this format YYYY-MM-DD: ')
         return_date = end_date  # '2025-02-14' # input('Enter the return date in this format YYYY-MM-DD: ')

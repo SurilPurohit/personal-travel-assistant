@@ -14,10 +14,11 @@ def extract_city_from_text(user_text):
         prompt = f'''
             Extract the name of the city from the following text:
             Input: {user_text}
-            Output: The name of the city mentioned in the input text, if present.
+            Output: Only the name of the city, no other text.
             For example:
             Input: I want to travel to Tokyo next week
             Output: Tokyo
+
         '''
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",
