@@ -29,7 +29,7 @@ if "destination_city" not in st.session_state:
 # Sidebar for user input
 st.sidebar.header("🌍 Trip Details")
 
-cities = ["New York", "Los Angeles", "Toronto", "London", "Paris", "Tokyo", "Dubai", "Sydney", "Rome", "Bangkok"]
+cities = ["New York", "Los Angeles", "London", "Paris", "Tokyo", "Dubai", "Sydney", "Rome", "Bangkok"]
 
 # Ask user how they want to input their destination
 destination_input_method = st.sidebar.radio("How would you like to select your destination?", ["Enter text", "Use dropdown"])
@@ -180,14 +180,14 @@ try:
         components.html(
             """
             <div>
-                <button id="downloadBtn" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                <button id="downloadBtn" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
                     📥 Download ICS
                 </button>
-                <div id="confirmModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
-                    <h3>Confirm Download</h3>
-                    <p>Are you sure you want to download the calendar invite for your trip to {destination}?</p>
-                    <button onclick="document.getElementById('confirmModal').style.display='none'; document.getElementById('downloadLink').click();" style="background-color: #4CAF50; color: white; padding: 5px 10px; border: none; border-radius: 5px;">Yes</button>
-                    <button onclick="document.getElementById('confirmModal').style.display='none';" style="background-color: #f44336; color: white; padding: 5px 10px; margin-left: 10px; border: none; border-radius: 5px;">No</button>
+                <div id="confirmModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 30px; border: 1px solid #ccc; box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); border-radius: 10px; width: 300px; text-align: center;">
+                    <h3 style="margin-bottom: 20px; font-size: 18px;">Confirm Download</h3>
+                    <p style="margin-bottom: 20px;">Are you sure you want to download the calendar invite for your trip to <strong>{destination}</strong>?</p>
+                    <button onclick="document.getElementById('confirmModal').style.display='none'; document.getElementById('downloadLink').click();" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">Yes</button>
+                    <button onclick="document.getElementById('confirmModal').style.display='none';" style="background-color: #f44336; color: white; padding: 10px 20px; margin-left: 10px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">No</button>
                 </div>
                 <a id="downloadLink" href="{calender_link}" download="trip_to_{destination}.ics" style="display: none;">Download</a>
                 <script>
@@ -197,8 +197,9 @@ try:
                 </script>
             </div>
             """.format(destination=destination, calender_link=calender(st.session_state.selected_flight)),
-            height=100
+            height=300
         )
+
 
 except AttributeError as e:
     st.session_state.flights = []
