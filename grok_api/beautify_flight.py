@@ -14,17 +14,6 @@ def beautify_flight(flights_details, flight_type, price):
         prompt = f'''
             return the flight summary in a more readable and understandable form given below instead of {flights_details}, {flight_type}, {price}
         '''    
-            # output should look like given below:
-            #     Flight 1 details -
-            #         - departure airport name with date and time
-            #         - arrival airport name with date and time
-            #         - round trip?
-            #         - price
-            #     Flight 2 details -
-            #         - departure airport name with date and time
-            #         - arrival airport name with date and time
-            #         - round trip?
-            #         - price
         
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant",

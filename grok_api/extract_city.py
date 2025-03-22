@@ -31,7 +31,6 @@ def extract_city_from_text(user_text):
         )
 
         summary = response.choices[0].message.content
-        # print(response.choices[0].message.content)
         # print(summary)
         return summary
 

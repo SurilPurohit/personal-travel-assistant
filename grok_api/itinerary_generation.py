@@ -42,7 +42,6 @@ def generate_itinerary(flight, city, weather_conditions):
         )
 
         summary = response.choices[0].message.content
-        # print(response.choices[0].message.content)
         # print(summary)
         return summary
 

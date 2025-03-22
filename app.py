@@ -10,13 +10,13 @@ from datetime import date, timedelta
 from weather_module.weather import weather
 import streamlit.components.v1 as components
 
-# Set up Streamlit page
+# Setting up Streamlit page
 st.set_page_config(page_title="Vacation Voyager", layout="wide")
 st.title("✈ Vacation Voyager")
 st.markdown("Plan your perfect trip in just a few clicks! 🚀")
 st.markdown("👋 Welcome to Vacation Voyager! Let’s plan your dream trip together.")
 
-# Define session state
+# Defining session state
 if "flights" not in st.session_state:
     st.session_state.flights = []
 if "selected_flight" not in st.session_state:
@@ -29,7 +29,7 @@ if "destination_city" not in st.session_state:
 # Sidebar for user input
 st.sidebar.header("🌍 Trip Details")
 
-cities = ["New York", "Los Angeles", "Toronto", "London", "Paris", "Tokyo", "Dubai", "Sydney", "Rome", "Bangkok"]
+cities = ["New York", "Los Angeles", "London", "Paris", "Tokyo", "Dubai", "Sydney", "Rome", "Bangkok"]
 
 # Ask user how they want to input their destination
 destination_input_method = st.sidebar.radio("How would you like to select your destination?", ["Enter text", "Use dropdown"])
@@ -56,7 +56,7 @@ else:
     city = st.sidebar.selectbox("Select your destination:", cities, index=0, disabled=dropdown_disabled)
     print(city)
 
-# Store the selected city
+# Storing the selected city
 st.session_state.destination_city = city
 
 passengers = st.sidebar.slider("Number of Passengers", 1, 10, 1)
@@ -70,7 +70,7 @@ min_end_date = start_date + timedelta(days=1)
 end_date = st.sidebar.date_input("Return Date", min_end_date, min_value=min_end_date, disabled=(trip_type == "One way"))
 
 if trip_type == "One way":
-    end_date = None  # Disable return date for One way
+    end_date = None  # Disable the return date for One way trips
 
 # Search Flights Button
 if st.sidebar.button("🔍 Search Flights"):
@@ -78,9 +78,6 @@ if st.sidebar.button("🔍 Search Flights"):
         st.sidebar.error("Please enter a valid destination or switch to dropdown selection.")
     else:
         st.session_state.destination_city = city
-        
-        # if city not in cities:
-        #     st.sidebar.info(f"Searching for flights to {city}. This destination may have limited information available.")
         
         st.session_state.flights = flight("YYZ", city, start_date, end_date, passengers, trip_type, flight_class)
         if isinstance(st.session_state.flights, pd.DataFrame) and not st.session_state.flights.empty:
@@ -90,7 +87,7 @@ if st.sidebar.button("🔍 Search Flights"):
             st.subheader("⚠️ We dont have flights available for your search. Try searching again!")
 
 try:
-    # Show Available Flights After Search
+    # Show available flights after search
     if not st.session_state.flights.empty:
         st.subheader(f"⛅ Weather Forecast for {city}")
         weather_text = weather(city, start_date, end_date)
@@ -164,7 +161,7 @@ try:
         st.subheader("We dont have flights available for your search. Try searching again!")
 
 
-    # Show Itinerary After Flight Selection
+    # Show ttinerary after flight selection
     if st.session_state.selected_flight is not None:
         st.subheader("📝 Your Itinerary")
         st.success("Flight Selected! Generating Itinerary...")
@@ -176,6 +173,7 @@ try:
             st.markdown(generate_itinerary(st.session_state.selected_flight, destination, weather_conditions), unsafe_allow_html=True)
         
         st.subheader("📅 Calendar Invite")
+        
         # Custom button with confirmation modal
         components.html(
             """

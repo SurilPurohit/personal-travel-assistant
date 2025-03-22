@@ -34,7 +34,7 @@ def weather_summarize(user_city, start_date, weather_forecast):
         )
 
         summary = response.choices[0].message.content
-        print(response.choices[0].message.content)
+        print(summary)
         return summary
 
     except Exception as e:

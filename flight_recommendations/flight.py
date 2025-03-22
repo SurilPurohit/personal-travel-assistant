@@ -1,5 +1,3 @@
-from calender_api.calender import calender
-from grok_api.beautify_flight import beautify_flight
 from grok_api.city_code import city_code
 from serpapi import GoogleSearch
 import pandas as pd
@@ -89,8 +87,6 @@ def process_flight_data(flight_response):
                 # Ensure 'flights' is a key in the current flight_set
                 if 'flights' in flight_set:
                     for flight in flight_set['flights']:
-                        # Check if there are no layovers, meaning it's a direct flight
-                        # if not flight.get("layovers"):  # Empty layovers array means direct flight
                         details = {
                             "Flight Number": flight.get("flight_number", "N/A"),
                             "Airline": flight.get("airline", "N/A"),
@@ -110,8 +106,6 @@ def process_flight_data(flight_response):
                 # Ensure 'flights' is a key in the current flight_set
                 if 'flights' in flight_set:
                     for flight in flight_set['flights']:
-                        # Check if there are no layovers, meaning it's a direct flight
-                        # if not flight.get("layovers") and not flight.get("layovers"):  # Empty layovers array means direct flight
                         details = {
                             "Flight Number": flight.get("flight_number", "N/A"),
                             "Airline": flight.get("airline", "N/A"),
@@ -128,8 +122,6 @@ def process_flight_data(flight_response):
         # Convert to DataFrame for easier viewing
         flights_df = pd.DataFrame(direct_flights)
 
-        # Remove rows where two corresponding rows have the same price
-        # df = flights_df[flights_df.duplicated(subset=['Price'], keep=False) == False]
         return flights_df[:3]
 
     except KeyError as e:
@@ -170,12 +162,6 @@ def flight(dep_city, city, start_date, end_date, passengers, trip_type, flight_c
             return False  # Skip further processing
 
         print(flights_details)
-
-        # Adding flight details to calendar
-        # calender(flights_details.iloc[0])
-
-        # beautifying response with the help of grok API
-        # print(beautify_flight(flights_details, flight_type, price))
 
         return flights_details
 

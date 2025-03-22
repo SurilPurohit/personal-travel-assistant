@@ -31,7 +31,6 @@ def city_code(city):
         )
 
         summary = response.choices[0].message.content
-        # print(response.choices[0].message.content)
         # print(summary)
         return summary
 
